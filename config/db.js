@@ -18,18 +18,18 @@ async function connectDB() {
   }
 
   if (!cached.promise) {
-    const opts={
-        bufferCommands: false
+    const opts = {
+      bufferCommands: false
     }
 
-    cached.promise = mongoose.connect('${process.env.MONGODB_URI}/quickcart',opts).then( mongoose => {
-        return mongoose
-    } )
+    // ✅ Fixed: Using backticks for template literal interpolation
+    cached.promise = mongoose.connect(`${process.env.MONGODB_URI}/quickcart`, opts).then(mongoose => {
+      return mongoose
+    })
   }
 
   cached.conn = await cached.promise
   return cached.conn
-
 }
 
 export default connectDB
