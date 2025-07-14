@@ -55,3 +55,10 @@ export const syncUserDeletion = inngest.createFunction(
     }
 )
 
+export default {
+  inngest,
+  syncUserCreation,
+  syncUserUpdation,
+  syncUserDeletion
+};
+
