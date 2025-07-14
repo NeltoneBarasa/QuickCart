@@ -7,6 +7,11 @@ if (!cached) {
 }
 
 async function connectDB() {
+  console.log('MONGODB_URI:', process.env.MONGODB_URI);
+  console.log('MONGODB_URI type:', typeof process.env.MONGODB_URI);
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI environment variable is not defined');
+  }
 
   if (cached.conn) {
     return cached.conn
