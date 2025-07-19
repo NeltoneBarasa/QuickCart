@@ -3,6 +3,9 @@ import { productsDummyData, userDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import axios from "axios";
+import { useAuth } from "@clerk/nextjs";
+import { toast } from "react-toastify";
 
 export const AppContext = createContext();
 
@@ -16,18 +19,52 @@ export const AppContextProvider = (props) => {
     const router = useRouter()
 
     const {user} = useUser()
+    const {getToken} = useAuth()
 
     const [products, setProducts] = useState([])
     const [userData, setUserData] = useState(false)
-    const [isSeller, setIsSeller] = useState(true)
+    const [isSeller, setIsSeller] = useState(false)
     const [cartItems, setCartItems] = useState({})
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const fetchProductData = async () => {
-        setProducts(productsDummyData)
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (data.success) {
+          setProducts(data.products);
+        } else {
+          toast.error(data.message || "Failed to fetch products.");
+        }
+      } catch (error) {
+        toast.error(error.message || "Unknown error fetching products.");
+      }
     }
 
     const fetchUserData = async () => {
-        setUserData(userDummyData)
+        try {
+            setIsSeller(true); // Force seller dashboard visible for all users
+            setUserData(user ? user : userDummyData);
+
+            const token = await getToken();
+            const { data } = await axios.get('/api/user/data', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (data.success) {
+                setUserData(data.user);
+                setCartItems(data.user.cartItems);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+            console.error("fetchUserData error:", error);
+        }
     }
 
     const addToCart = async (itemId) => {
@@ -40,6 +77,19 @@ export const AppContextProvider = (props) => {
             cartData[itemId] = 1;
         }
         setCartItems(cartData);
+    
+        if (user) {
+            try {
+              const token = await getToken()
+
+              await axios.post('/api/cart/update',{cartData}, {headers:{Authorization: `Bearer ${token}`}})
+
+              toast.success('Cart Updated')
+            } catch (error) {
+                toast.error(error.message)
+          
+            }
+          }
 
     }
 
@@ -77,15 +127,22 @@ export const AppContextProvider = (props) => {
     }
 
     useEffect(() => {
+        if (user) {
+            fetchUserData()
+        }
         fetchProductData()
-    }, [])
+    }, [user])
 
     useEffect(() => {
         fetchUserData()
     }, [])
 
+    if (!mounted) {
+        return null;
+    }
+
     const value = {
-        user,
+        user, getToken,
         currency, router,
         isSeller, setIsSeller,
         userData, fetchUserData,

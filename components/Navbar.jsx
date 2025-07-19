@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { assets} from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
@@ -48,10 +48,16 @@ const BoxIcon = () => (
 );
 
 const Navbar = () => {
-
   const { isSeller, router, user } = useAppContext();
-  const {openSignIn} = useClerk()
+  const [mounted, setMounted] = useState(false);
+  const { openSignIn } = useClerk();
   const { isSignedIn } = useUser();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700">
@@ -60,6 +66,10 @@ const Navbar = () => {
         onClick={() => router.push('/')}
         src={assets.logo}
         alt="logo"
+        width={128}
+        height={40}
+        priority
+        style={{ width: '7rem', height: 'auto' }}
       />
       <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
         <Link href="/" className="hover:text-gray-900 transition">

@@ -35,7 +35,13 @@ const Product = () => {
                 <div className="px-5 lg:px-16 xl:px-20">
                     <div className="rounded-lg overflow-hidden bg-gray-500/10 mb-4">
                         <Image
-                            src={mainImage || productData.image[0]}
+                            src={
+                                (mainImage || (productData.image && productData.image[0]))
+                                    ? ((mainImage || productData.image[0]).startsWith('http')
+                                        ? (mainImage || productData.image[0])
+                                        : `/assets/${mainImage || productData.image[0]}`)
+                                    : assets.upload_area
+                            }
                             alt="alt"
                             className="w-full h-auto object-cover mix-blend-multiply"
                             width={1280}
@@ -51,7 +57,13 @@ const Product = () => {
                                 className="cursor-pointer rounded-lg overflow-hidden bg-gray-500/10"
                             >
                                 <Image
-                                    src={image}
+                                    src={
+                                        image
+                                            ? (image.startsWith('http')
+                                                ? image
+                                                : `/assets/${image}`)
+                                            : assets.upload_area
+                                    }
                                     alt="alt"
                                     className="w-full h-auto object-cover mix-blend-multiply"
                                     width={1280}

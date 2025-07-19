@@ -14,6 +14,18 @@ const SideBar = () => {
 
     return (
         <div className='md:w-64 w-16 border-r min-h-screen text-base border-gray-300 py-2 flex flex-col'>
+            {/* Go Home option */}
+            <Link href="/" passHref>
+                <div className="flex items-center py-3 px-4 gap-3 hover:bg-gray-100/90 border-white">
+                    <Image
+                        src={assets.home_icon || assets.logo}
+                        alt="home_icon"
+                        className="w-7 h-7"
+                    />
+                    <p className='md:block hidden text-center'>Home</p>
+                </div>
+            </Link>
+            {/* Seller menu items */}
             {menuItems.map((item) => {
 
                 const isActive = pathname === item.path;

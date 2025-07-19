@@ -2,8 +2,14 @@
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const AddProduct = () => {
+  const { getToken } = useAppContext();
+
+
 
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
@@ -15,6 +21,59 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 1. Upload images to Cloudinary and get URLs
+    let imageUrls = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        if (files[i]) {
+          const uploadForm = new FormData();
+          uploadForm.append('file', files[i]);
+          const uploadRes = await axios.post('/api/upload', uploadForm);
+          if (uploadRes.data.success) {
+            imageUrls.push(uploadRes.data.url);
+          } else {
+            toast.error('Image upload failed: ' + (uploadRes.data.message || 'Unknown error'));
+            return;
+          }
+        }
+      }
+    } catch (uploadError) {
+      toast.error('Image upload failed: ' + (uploadError.message || 'Unknown error'));
+      return;
+    }
+
+    // 2. Submit product with Cloudinary image URLs
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('category', category);
+    formData.append('price', price);
+    formData.append('offerPrice', offerPrice);
+    imageUrls.forEach(url => formData.append('images', url));
+
+    try {
+      const token = await getToken();
+      console.log('Submitting product with token:', token);
+      const { data } = await axios.post('/api/product/add', formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('API response:', data);
+      if (data.success) {
+        toast.success(data.message);
+        setFiles([]);
+        setName('');
+        setDescription('');
+        setCategory('Earphone');
+        setPrice('');
+        setOfferPrice('');
+      } else {
+        toast.error(data.message || 'Failed to add product.');
+        console.error('API error:', data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Unknown error');
+      console.error('handleSubmit error:', error);
+    }
   };
 
   return (
