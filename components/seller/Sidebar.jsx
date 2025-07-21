@@ -18,7 +18,7 @@ const SideBar = () => {
             <Link href="/" passHref>
                 <div className="flex items-center py-3 px-4 gap-3 hover:bg-gray-100/90 border-white">
                     <Image
-                        src={assets.home_icon || assets.logo}
+                        src={assets.redirect_icon}
                         alt="home_icon"
                         className="w-7 h-7"
                     />

@@ -47,8 +47,14 @@ export const AppContextProvider = (props) => {
 
     const fetchUserData = async () => {
         try {
-            setIsSeller(true); // Force seller dashboard visible for all users
             setUserData(user ? user : userDummyData);
+
+            // Check if user is a seller based on Clerk metadata
+            if (user && user.publicMetadata && user.publicMetadata.role === 'seller') {
+                setIsSeller(true);
+            } else {
+                setIsSeller(false);
+            }
 
             const token = await getToken();
             const { data } = await axios.get('/api/user/data', {
