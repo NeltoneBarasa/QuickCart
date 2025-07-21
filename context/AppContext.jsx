@@ -47,7 +47,13 @@ export const AppContextProvider = (props) => {
 
     const fetchUserData = async () => {
         try {
-            setIsSeller(true); // Force seller dashboard visible for all users
+            // Check if user has seller role from Clerk metadata
+            if (user && user.publicMetadata && user.publicMetadata.role === 'seller') {
+                setIsSeller(true);
+            } else {
+                setIsSeller(false);
+            }
+            
             setUserData(user ? user : userDummyData);
 
             const token = await getToken();
